@@ -34,15 +34,6 @@ export default {
             return new Response(null, { status: 401 });
         }
         let [doh, edns] = upstreams[upstream];
-        // For NextDNS, we fixup device indicator to improve logging seen in NextDNS Console
-        if (upstream == "nextdns") {
-            if (auths.length == 4) {
-                doh = doh + auths[3];
-            }
-            else {
-                doh = doh + "cfworker";
-            }
-        }
         let extended_body = new Uint8Array(0);
 
         if (edns) {
@@ -123,7 +114,6 @@ export default {
             opt_fixed.forEach((v) => body_arr.push(v));
             opt_variable.forEach((v) => body_arr.push(v));
             extended_body = new Uint8Array(body_arr);
-            console.log(extended_body);
         }
         switch (method) {
             case "POST": {
@@ -221,8 +211,6 @@ export default {
                     extended_body.forEach((v) => body_arr.push(v));
                 }
                 const body = new Uint8Array(body_arr);
-                console.log("Query_Full");
-                console.log(body);
                 var res = await fetch(new Request(doh, {
                     method: 'POST',
                     headers: {
@@ -243,7 +231,6 @@ export default {
         
                         const finalBuffer = Buffer.concat(buffers);
                         const dns_resp = dnsPacket.decode(finalBuffer);
-                        console.log(dns_resp);
                         var json_resp = {};
                         json_resp["Status"] = dns_resp.flags & 0xf;
                         //json_resp["AA"] = dns_resp.flag_aa;
@@ -271,7 +258,6 @@ export default {
                         }
                         json_resp["Answer"] = answers;
                         const json_resp_str = JSON.stringify(json_resp);
-                        console.log(json_resp_str);
                         return new Response(json_resp_str, {
                             status: 200,
                             headers: {
