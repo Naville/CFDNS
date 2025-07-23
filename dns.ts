@@ -2,10 +2,7 @@
 const dnsPacket = require('dns-packet');
 const dnsPacket_types = require('dns-packet/types')
 // 目前的实现要求所有的上流DNS都支持DNS Wireformat
-const upstreams = { "cf": ['https://cloudflare-dns.com/dns-query', false], "google": ["https://dns.google/dns-query", true], "dnspod": ["https://doh.pub/dns-query", false] };
-// Preserve the first X components or source IP when sending to upstream
-const ip_strip_v4 = 2;
-const ip_strip_v6 = 12;
+const upstreams = { "cf": ['https://cloudflare-dns.com/dns-query', false], "google": ["https://dns.google/dns-query", true], "dnspod": ["https://doh.pub/dns-query", false],"nextdns": ["https://dns.nextdns.io",true],"opendns":["https://doh.opendns.com/dns-query",true],"twnic":["https://dns.twnic.tw/dns-query",true] };
 
 // 定义响应
 const r404 = new Response(null, { status: 404 });
@@ -34,6 +31,9 @@ export default {
             return new Response(null, { status: 401 });
         }
         let [doh, edns] = upstreams[upstream];
+        if(upstream == "nextdns"){
+            doh = doh + "/" + env.NEXTDNS_KEY
+        }
         let extended_body = new Uint8Array(0);
 
         if (edns) {
@@ -65,12 +65,10 @@ export default {
 
                 family = new Uint8Array([0x0, 0x2]);
                 src_ip = ipv6_full.split(':').filter((comp) => comp.length > 0).map((comp) => parseInt(comp, 16));
-                src_ip = src_ip.slice(0, ip_strip_v6);
             }
             else if (ip.includes(".")) {
                 family = new Uint8Array([0x0, 0x1]);
                 src_ip = ip.split('.').filter((comp) => comp.length > 0).map((comp) => parseInt(comp, 10));
-                src_ip = src_ip.slice(0, ip_strip_v4);
             }
             else {
                 console.log("Unknown Source IP");
