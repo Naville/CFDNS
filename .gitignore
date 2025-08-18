@@ -178,3 +178,4 @@ dist
 
 .wrangler/
 *vars
+dist/

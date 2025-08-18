@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "wrangler": "^3.78.12"
+    "wrangler": "^4.30.0"
   },
   "dependencies": {
     "dns-packet": "^5.6.1"
